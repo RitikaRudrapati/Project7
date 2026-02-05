@@ -1,4 +1,4 @@
-
+#--------------------------constant push and pop--------------------------#
 def pushConstant(value):
     message  = "@" + str(value) + "\n"
     message += "D=A\n"
@@ -11,6 +11,8 @@ def popConstant():
     message += "A=M\n"
     message += "D=M\n"
     return message
+
+#--------------------------SEGMENT POP AND PUSH--------------------------#
 
 #accepted parameter for segement: @LCL, @ARG, @THIS, @THAT, 
 def pushSegment(segment, value):
@@ -42,6 +44,18 @@ def popSegment(segment, value):
     message += "A=M\n"
     message += "M=D\n"
     
+    return message
+
+#--------------------------Arithmetic commands--------------------------#
+def arithmetic(command):
+    message = decrementSP() 
+    message += "D=M\n" # y
+
+    message += decrementSP() 
+    message += "A=M\n" 
+    message += "D=D" + command + "M\n" # x (command) y
+
+    message += pushValue() 
     return message
 
 #--------------------------HELPER FUNCTIONS--------------------------#
