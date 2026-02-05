@@ -45,8 +45,30 @@ def popSegment(segment, value):
     message += "M=D\n"
     
     return message
+#--------------------------temp push and pop--------------------------#
 
+def pushTemp(value):
+    message  = "@" + str(5 + value) + "\n"
+    message += "D=M\n"
+    message += pushValue()
+    return message
+
+def popTemp(value):
+    message = decrementSP()
+    message += "A=M\n"
+    message += "D=M\n"
+    message += "@" + str(5 + value) + "\n"
+    message += "M=D\n"
+    return message
+
+#--------------------------pointer push and pop--------------------------#
+
+def pushPointer(value):
+
+    
 #--------------------------Arithmetic commands--------------------------#
+
+#acceptable parameters: +, -, &, | 
 def arithmetic(command):
     message = decrementSP() 
     message += "D=M\n" # y
@@ -58,6 +80,9 @@ def arithmetic(command):
     message += pushValue() 
     return message
 
+#--------------------------logical commands--------------------------#
+def logical(command, labelCount):
+    print("help")
 #--------------------------HELPER FUNCTIONS--------------------------#
 def pushValue():
     message = "@SP\n"
