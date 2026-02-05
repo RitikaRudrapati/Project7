@@ -5,12 +5,6 @@ def pushConstant(value):
     message += pushValue()
     return message
 
-#apprently I dont need to pop constant?????
-def popConstant():
-    message = decrementSP()
-    message += "A=M\n"
-    message += "D=M\n"
-    return message
 
 #--------------------------SEGMENT POP AND PUSH--------------------------#
 
@@ -64,8 +58,19 @@ def popTemp(value):
 #--------------------------pointer push and pop--------------------------#
 
 def pushPointer(value):
+    message  = "@" + str(3 + value) + "\n"
+    message += "D=M\n"
+    message += pushValue()
+    return message
 
-    
+def popPointer(value):
+    message = decrementSP()
+    message += "A=M\n"
+    message += "D=M\n"
+    message += "@" + str(3 + value) + "\n"
+    message += "M=D\n"
+    return message
+
 #--------------------------Arithmetic commands--------------------------#
 
 #acceptable parameters: +, -, &, | 
@@ -78,11 +83,14 @@ def arithmetic(command):
     message += "D=D" + command + "M\n" # x (command) y
 
     message += pushValue() 
+
     return message
 
 #--------------------------logical commands--------------------------#
-def logical(command, labelCount):
+def logical(command):
     print("help")
+
+
 #--------------------------HELPER FUNCTIONS--------------------------#
 def pushValue():
     message = "@SP\n"
