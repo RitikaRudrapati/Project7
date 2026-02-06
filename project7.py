@@ -86,6 +86,23 @@ def arithmetic(command):
 
     return message
 
+#--------------------------static pop and push--------------------------#
+
+def pushStatic(value):
+    message  = "@" + fileName + "." + str(value) + "\n"
+    message += "D=M\n"
+    message += pushValue()
+    return message
+
+def popStatic(value):
+    message = decrementSP()
+    message += "A=M\n"
+    message += "D=M\n"
+    message += "@" + fileName + "." + str(value) + "\n"
+    message += "M=D\n"
+    return message
+
+
 #--------------------------logical commands--------------------------#
 def logical(command):
     print("help")
