@@ -1,4 +1,6 @@
 #--------------------------constant push and pop--------------------------#
+
+
 def pushConstant(value):
     message  = "@" + str(value) + "\n"
     message += "D=A\n"
@@ -30,7 +32,7 @@ def popSegment(segment, value):
     message += "M=D\n" 
 
     #pop the top value off the stack
-    message = decrementSP()       # SP-- 
+    message = decrementSP()       # SP is getting ready to pop the top value off the stack 
     message += "A=M\n"             #A points to the actual memory location of the top value
     message += "D=M\n"             # D = get top of the stack value 
 
@@ -105,7 +107,37 @@ def popStatic(value):
 
 #--------------------------logical commands--------------------------#
 def logical(command):
-    print("help")
+    count = 0 
+
+    true = f"EQ_{count}"
+    false = f"EQ_f{count}"
+
+    message = decrementSP()
+    message += "A=M\n"
+    message += "D=M\n"  # y
+
+    message += decrementSP()
+    message += "A=M\n"
+    message += "D=M-D\n"
+
+    message += "@" + true + "\n"
+    if command == "eq":
+        message += "D;JEQ\n"
+    elif command == "gt":
+        message += "D;JGT\n"
+    elif command == "lt":
+        message += "D;JLT\n"
+    
+    message += "D=0\n"
+    message += "@" + false + "\n"
+    message += "0;JMP\n"
+    message += "(" + true + ")\n"
+    message += "D=-1\n"
+    message += "(" + false + ")\n"
+
+    message += pushValue()
+
+    return message
 
 
 #--------------------------HELPER FUNCTIONS--------------------------#
