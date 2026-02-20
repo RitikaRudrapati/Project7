@@ -2,6 +2,52 @@ import os
 
 global message
 
+#-----------------------------------------------------------project 8---------------------------------------------------------------------------------------------#
+
+currentFunction = "null"
+
+def getLabel(labelName):
+
+    global currentFunction
+    label = currentFunction + "$" + labelName
+    return label
+
+def writeLabel(labelName):
+
+    global message, currentFunction
+    
+    message += "(" + getLabel(labelName) + ")\n"
+
+def writeGoto(labelName):
+
+    global message, currentFunction
+    
+    message += "@" + getLabel(labelName) + "\n"
+    message += "0;JMP\n"
+
+def writeIfGoto(labelName):
+
+    global message, currentFunction
+
+    decrementSP()
+    message += "A=M\n"
+    message += "D=M\n"
+    message += "@" + getLabel(labelName) + "\n"
+    message += "D;JNE\n"
+
+
+def writeFunction(functionName, numLocals):
+    global message, currentFunction
+
+    currentFunction = functionName
+    message += "(" + functionName + ")\n"
+    for i in range(numLocals):
+        pushConstant(0)
+
+
+
+#-----------------------------------------------------------project 7---------------------------------------------------------------------------------------------#
+
 #--------------------------constant push and pop--------------------------#
 count = 0
 
