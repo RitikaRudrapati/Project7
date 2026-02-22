@@ -44,7 +44,41 @@ def writeFunction(functionName, numLocals):
     for i in range(numLocals):
         pushConstant(0)
 
+def writeCall(functionName, numArgs):
+    global message, currentFunction
 
+    returnAddress = functionName + "$ret." + str(count)
+    count += 1
+
+    #push return address
+    message += "@" + returnAddress + "\n"
+    message += "D=A\n"
+    pushValue()
+
+    #push LCL, ARG, THIS, THAT
+    for segment in ["@LCL", "@ARG", "@THIS", "@THAT"]:
+        message += segment + "\n"
+        message += "D=M\n"
+        pushValue()
+
+    #ARG = SP - numArgs - 5
+    message += "@SP\n"
+    message += "D=M\n"
+    message += "@" + str(numArgs + 5) + "\n"
+    message += "D=D-A\n"
+    message += "@ARG\n"
+    message += "M=D\n"
+
+    #LCL = SP
+    message += "@SP\n"
+    message += "D=M\n"
+    message += "@LCL\n"
+    message += "M=D\n"
+
+    writeGoto(functionName)
+
+    #declare return address label
+    message += "(" + returnAddress + ")\n"
 
 #-----------------------------------------------------------project 7---------------------------------------------------------------------------------------------#
 
