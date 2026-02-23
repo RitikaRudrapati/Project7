@@ -36,18 +36,19 @@ def writeIfGoto(labelName):
     message += "D;JNE\n"
 
 
-def writeFunction(functionName, numLocals):
+def writeFunction(fName, localNums):
     global message, currentFunction
 
-    currentFunction = functionName
-    message += "(" + functionName + ")\n"
-    for i in range(numLocals):
+    currentFunction = fName
+    message += "(" + fName + ")\n"
+
+    for i in range(localNums):
         pushConstant(0)
 
-def writeCall(functionName, numArgs):
-    global message, currentFunction
+def writeCall(fName, argsNums):
+    global message, currentFunction, count
 
-    returnAddress = functionName + "$ret." + str(count)
+    returnAddress = fName + "$ret." + str(count)
     count += 1
 
     #push return address
@@ -55,16 +56,15 @@ def writeCall(functionName, numArgs):
     message += "D=A\n"
     pushValue()
 
-    #push LCL, ARG, THIS, THAT
-    for segment in ["@LCL", "@ARG", "@THIS", "@THAT"]:
-        message += segment + "\n"
-        message += "D=M\n"
-        pushValue()
+    pushSegment("LCL")
+    pushSegment("ARG")
+    pushSegment("THIS")
+    pushSegment("THAT")
 
     #ARG = SP - numArgs - 5
     message += "@SP\n"
     message += "D=M\n"
-    message += "@" + str(numArgs + 5) + "\n"
+    message += "@" + str(argsNums + 5) + "\n"
     message += "D=D-A\n"
     message += "@ARG\n"
     message += "M=D\n"
@@ -75,10 +75,41 @@ def writeCall(functionName, numArgs):
     message += "@LCL\n"
     message += "M=D\n"
 
-    writeGoto(functionName)
+    writeGoto(fName)
 
     #declare return address label
     message += "(" + returnAddress + ")\n"
+
+def writeReturn():
+    global message, currentFunction
+
+    #FRAME = LCL
+    message += "@LCL\n"
+    message += "D=M\n"
+    message += "@R13\n"
+    message += "M=D\n"
+
+    #RET = *(FRAME - 5)
+    message += "@5\n"
+    message += "A=D-A\n"
+    message += "D=M\n"
+    message += "@R14\n"
+    message += "M=D\n"
+
+    
+    #*ARG = pop()
+    decrementSP()
+    message += "A=M\n"
+    message += "D=M\n"
+    message += "@ARG\n"
+    message += "A=M\n"
+    message += "M=D\n"
+
+def pushSegment(segment):
+    global message
+    message += "@" + segment + "\n"
+    message += "D=M\n"
+    pushValue()
 
 #-----------------------------------------------------------project 7---------------------------------------------------------------------------------------------#
 
