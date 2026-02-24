@@ -6,6 +6,14 @@ global message
 
 currentFunction = "null"
 
+def bootstrap():
+    global message
+    message += "@256\n"
+    message += "@D=A\n"
+    message += "@SP\n"
+    message += "M=D\n"
+    writeCall("Sys.init", 0)
+
 def getLabel(labelName):
 
     global currentFunction
