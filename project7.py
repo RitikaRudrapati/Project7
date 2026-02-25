@@ -1,4 +1,5 @@
 import os
+import sys
 
 global message
 
@@ -7,18 +8,23 @@ global message
 currentFunction = "null"
 
 def bootstrap():
-    global message
+    global message, currentFunction
     message += "@256\n"
-    message += "@D=A\n"
+    message += "D=A\n"
     message += "@SP\n"
     message += "M=D\n"
+
+    oldFunction = currentFunction
+    currentFunction = ""
     writeCall("Sys.init", 0)
+    currentFunction = oldFunction
 
 def getLabel(labelName):
 
     global currentFunction
-    label = currentFunction + "$" + labelName
-    return label
+    if currentFunction:
+        return currentFunction + "$" + labelName
+    return labelName
 
 def writeLabel(labelName):
 
@@ -64,10 +70,10 @@ def writeCall(fName, argsNums):
     message += "D=A\n"
     pushValue()
 
-    pushSegment("LCL")
-    pushSegment("ARG")
-    pushSegment("THIS")
-    pushSegment("THAT")
+    pushSegmentBase("LCL")
+    pushSegmentBase("ARG")
+    pushSegmentBase("THIS")
+    pushSegmentBase("THAT")
 
     #ARG = SP - numArgs - 5
     message += "@SP\n"
@@ -103,17 +109,50 @@ def writeReturn():
     message += "D=M\n"
     message += "@R14\n"
     message += "M=D\n"
-
     
     #*ARG = pop()
     decrementSP()
+
     message += "A=M\n"
     message += "D=M\n"
     message += "@ARG\n"
     message += "A=M\n"
     message += "M=D\n"
 
-def pushSegment(segment):
+    #sp = ARG + 1
+    message += "@ARG\n"
+    message += "D=M+1\n"
+    message += "@SP\n"
+    message += "M=D\n"
+
+    #THAT = *(FRAME - 1)
+    frameDecrment("THAT", 1)
+
+    #THIS = *(FRAME - 2)
+    frameDecrment("THIS", 2)
+
+    #ARG = *(FRAME - 3)
+    frameDecrment("ARG", 3)
+
+    #LCL = *(FRAME - 4)
+    frameDecrment("LCL", 4)
+
+    #goto RET
+    message += "@R14\n"
+    message += "A=M\n"
+    message += "0;JMP\n"
+
+def frameDecrment(segment, offset):
+    global message
+    message += "@R13\n"
+    message += "D=M\n"
+    message += "@" + str(offset) + "\n"
+    message += "D=D-A\n"
+    message += "D=M\n"
+    message += "@" + segment + "\n"
+    message += "M=D\n"
+
+def pushSegmentBase(segment):
     global message
     message += "@" + segment + "\n"
     message += "D=M\n"
@@ -122,7 +161,6 @@ def pushSegment(segment):
 #-----------------------------------------------------------project 7---------------------------------------------------------------------------------------------#
 
 #--------------------------constant push and pop--------------------------#
-count = 0
 
 def pushConstant(value):
     global message
@@ -271,16 +309,32 @@ def incrementSP():
 #--------------------------reading in the files--------------------------#
 def readFile(fileName):
     global message
-    message = ""
     global file
+
+    fileName = os.path.abspath(fileName)
+
+
+    if os.path.isdir(fileName):
+        for i in os.listdir(fileName):
+            if i.endswith(".vm"):
+                readFile(os.path.join(fileName, i))
+        return  
+    
+    if not fileName.endswith(".vm"):
+        return
+    
     file = os.path.basename(fileName).split(".")[0]
+
     with open(fileName) as f:
         lines = f.readlines()
-    for line in lines: 
+
+    for line in lines:
         line = line.split("//")[0].strip()
         if line == "":
             continue
+
         parts = line.split()
+
         if parts[0] == "push":
             segment = parts[1]
             value = int(parts[2])
@@ -300,6 +354,7 @@ def readFile(fileName):
                 pushPointer(value)
             elif segment == "static":
                 pushStatic(value)
+
         elif parts[0] == "pop":
             segment = parts[1]
             value = int(parts[2])
@@ -317,20 +372,23 @@ def readFile(fileName):
                 popPointer(value)
             elif segment == "static":
                 popStatic(value)
+
         elif parts[0] in ["add", "sub", "and", "or"]:
-            if parts[0] == "add":
-                parts[0] = "+"
-            elif parts[0] == "sub":
-                parts[0] = "-"
-            elif parts[0] == "and":
-                parts[0] = "&"
-            elif parts[0] == "or":
-                parts[0] = "|"
-            arithmetic(parts[0])
+            ops = {"add": "+", "sub": "-", "and": "&", "or": "|"}
+            arithmetic(ops[parts[0]])
+
         elif parts[0] in ["eq", "gt", "lt"]:
             logical(parts[0])
-        else:
-            message += "Incorrect command: " + parts[0]
+
+        elif parts[0] == "label":
+            writeLabel(parts[1])
+
+        elif parts[0] == "goto":
+            writeGoto(parts[1])
+
+        elif parts[0] == "if-goto":
+            writeIfGoto(parts[1])
+
 
 def writeToFile():
     global message
@@ -347,8 +405,22 @@ def writeToFile():
 
 #--------------------------RUN THE CODE--------------------------#
 
-#hardcode this for testing purposes, can change it to read in a directory of files later 
+#make this a command line arugment 
 test_path = r"C:\Users\ritik\ECS_2\project7\test.vm"
 
+#os.argv[1] = test_path
+#ask the user for the path to the file or directory they want to translate, then read in the file and write to the output file
+
+if len(sys.argv) > 1:
+    test_path = sys.argv[1]
+else:
+    test_path = input("Enter the path to the file or directory to translate: ")
+
+count = 0
+message = ""
+file = ""
+currentFunction = "null"
+bootstrap()
 readFile(test_path)
 writeToFile()
+print("Done! Output written to"+ os.path.splitext(test_path)[0] + ".asm")
