@@ -5,7 +5,6 @@ global message
 
 #-----------------------------------------------------------project 8---------------------------------------------------------------------------------------------#
 
-currentFunction = "null"
 
 def bootstrap():
     global message, currentFunction
@@ -20,9 +19,8 @@ def bootstrap():
     currentFunction = oldFunction
 
 def getLabel(labelName):
-
     global currentFunction
-    if currentFunction:
+    if currentFunction != "":
         return currentFunction + "$" + labelName
     return labelName
 
@@ -89,7 +87,8 @@ def writeCall(fName, argsNums):
     message += "@LCL\n"
     message += "M=D\n"
 
-    writeGoto(fName)
+    message += "@" + fName + "\n"
+    message += "0;JMP\n"
 
     #declare return address label
     message += "(" + returnAddress + ")\n"
@@ -121,7 +120,8 @@ def writeReturn():
 
     #sp = ARG + 1
     message += "@ARG\n"
-    message += "D=M+1\n"
+    message += "D=M\n"
+    message += "D=D+1\n"
     message += "@SP\n"
     message += "M=D\n"
 
@@ -147,7 +147,7 @@ def frameDecrment(segment, offset):
     message += "@R13\n"
     message += "D=M\n"
     message += "@" + str(offset) + "\n"
-    message += "D=D-A\n"
+    message += "A=D-A\n"
     message += "D=M\n"
     message += "@" + segment + "\n"
     message += "M=D\n"
@@ -175,7 +175,7 @@ def pushSegment(segment, value):
     message  += "@" + str(value) + "\n"
     message += "D=A\n"
     message += str(segment) + "\n"
-    message += "A=M+D\n"
+    message += "A=D+M\n"
     message += "D=M\n"
     pushValue()
 
@@ -230,12 +230,25 @@ def popPointer(value):
 #--------------------------Arithmetic commands--------------------------#
 def arithmetic(command):
     global message
-    decrementSP() 
-    message += "D=M\n" # y
-    decrementSP() 
-    message += "A=M\n" 
-    message += "D=D" + command + "M\n" # x (command) y
-    pushValue() 
+    # SP--
+    message += "@SP\n"
+    message += "AM=M-1\n"
+    message += "D=M\n"        # D = y
+
+    # SP--
+    message += "@SP\n"
+    message += "AM=M-1\n"     # A now points to x
+
+    if command == "+":
+        message += "M=D+M\n"
+    elif command == "-":
+        message += "M=M-D\n"
+    elif command == "&":
+        message += "M=M&D\n"
+    elif command == "|":
+        message += "M=M|D\n"
+
+    incrementSP()       # SP++
 
 #--------------------------static pop and push--------------------------#
 def pushStatic(value):
@@ -388,14 +401,20 @@ def readFile(fileName):
 
         elif parts[0] == "if-goto":
             writeIfGoto(parts[1])
+        elif parts[0] == "function":
+            writeFunction(parts[1], int(parts[2]))
+        elif parts[0] == "call":
+            writeCall(parts[1], int(parts[2]))
+        elif parts[0] == "return":
+            writeReturn()
 
 
 def writeToFile():
     global message
 
     #code credit to stack overflow for this part: https://stackoverflow.com/questions/541390/extracting-extension-from-filename-in-python
-    folder = os.path.dirname(test_path)
-    base_name = os.path.basename(test_path).split(".")[0]
+    folder = os.path.dirname(path)
+    base_name = os.path.basename(path).split(".")[0]
     output_path = os.path.join(folder, base_name + ".asm")    
 
     with open(output_path, "w") as outfile:
@@ -405,22 +424,30 @@ def writeToFile():
 
 #--------------------------RUN THE CODE--------------------------#
 
-#make this a command line arugment 
-test_path = r"C:\Users\ritik\ECS_2\project7\test.vm"
 
 #os.argv[1] = test_path
 #ask the user for the path to the file or directory they want to translate, then read in the file and write to the output file
 
 if len(sys.argv) > 1:
-    test_path = sys.argv[1]
+    path = sys.argv[1]
 else:
-    test_path = input("Enter the path to the file or directory to translate: ")
+    path = input("Enter the path to the file or directory to translate: ")
 
 count = 0
 message = ""
 file = ""
-currentFunction = "null"
-bootstrap()
-readFile(test_path)
+currentFunction = ""
+
+if os.path.isdir(path):
+    #bootstrap()
+    pass
+
+#bootstrap is not required for BasicLoop, 
+#bootstrap is required for FibonacciElement, Nested Call, and StaticTest because they all call Sys.init, which is the entry point of the program.
+
+#simple function still doesn't work  
+
+readFile(path)
+print(message)
 writeToFile()
-print("Done! Output written to"+ os.path.splitext(test_path)[0] + ".asm")
+print("Done! Output written to "+ os.path.splitext(path)[0] + ".asm")
