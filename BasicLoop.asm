@@ -8,8 +8,7 @@ M=M+1
 @0
 D=A
 @LCL
-A=M
-D=D+A
+D=D+M
 @R13
 M=D
 @SP
@@ -51,8 +50,7 @@ M=M+1
 @0
 D=A
 @LCL
-A=M
-D=D+A
+D=D+M
 @R13
 M=D
 @SP
@@ -90,8 +88,7 @@ M=M+1
 @0
 D=A
 @ARG
-A=M
-D=D+A
+D=D+M
 @R13
 M=D
 @SP

@@ -41,6 +41,9 @@ AM=M-1
 M=D+M
 @SP
 M=M+1
+@SP
+A=M-1
+M=!M
 @0
 D=A
 @ARG
@@ -81,6 +84,8 @@ M=M+1
 D=M
 @R13
 M=D
+@R13
+D=M
 @5
 A=D-A
 D=M

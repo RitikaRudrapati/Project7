@@ -206,8 +206,7 @@ M=M+1
 @1
 D=A
 @LCL
-A=M
-D=D+A
+D=D+M
 @R13
 M=D
 @SP
@@ -227,8 +226,7 @@ M=M+1
 @2
 D=A
 @LCL
-A=M
-D=D+A
+D=D+M
 @R13
 M=D
 @SP
@@ -248,8 +246,7 @@ M=M+1
 @3
 D=A
 @LCL
-A=M
-D=D+A
+D=D+M
 @R13
 M=D
 @SP
@@ -406,6 +403,8 @@ M=M+1
 D=M
 @R13
 M=D
+@R13
+D=M
 @5
 A=D-A
 D=M
@@ -510,6 +509,8 @@ M=M+1
 D=M
 @R13
 M=D
+@R13
+D=M
 @5
 A=D-A
 D=M

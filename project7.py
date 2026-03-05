@@ -102,12 +102,15 @@ def writeReturn():
     message += "@R13\n"
     message += "M=D\n"
 
-    #RET = *(FRAME - 5)
+    # RET = *(FRAME - 5)
+    message += "@R13\n"
+    message += "D=M\n"
     message += "@5\n"
     message += "A=D-A\n"
     message += "D=M\n"
     message += "@R14\n"
     message += "M=D\n"
+
     
     #*ARG = pop()
     decrementSP()
@@ -183,9 +186,8 @@ def popSegment(segment, value):
     global message
     message += "@" + str(value) + "\n" 
     message += "D=A\n"             # D = value 
-    message += str(segment) + "\n"
-    message += "A=M\n"             #A points to the base address of the segment. 
-    message += "D=D+A\n"           # now let d be the target address of LCL+value
+    message += str(segment) + "\n"  
+    message += "D=D+M\n"   
     message += "@R13\n"
     message += "M=D\n" 
 
@@ -390,6 +392,14 @@ def readFile(fileName):
             ops = {"add": "+", "sub": "-", "and": "&", "or": "|"}
             arithmetic(ops[parts[0]])
 
+        elif parts[0] in ["neg", "not"]:
+            message += "@SP\n"
+            message += "A=M-1\n"   # point to top of stack
+            if parts[0] == "neg":
+                message += "M=-M\n"
+            elif parts[0] == "not":
+                message += "M=!M\n"
+
         elif parts[0] in ["eq", "gt", "lt"]:
             logical(parts[0])
 
@@ -425,7 +435,6 @@ def writeToFile():
 #--------------------------RUN THE CODE--------------------------#
 
 
-#os.argv[1] = test_path
 #ask the user for the path to the file or directory they want to translate, then read in the file and write to the output file
 
 if len(sys.argv) > 1:
@@ -438,16 +447,11 @@ message = ""
 file = ""
 currentFunction = ""
 
-if os.path.isdir(path):
-    #bootstrap()
-    pass
-
-#bootstrap is not required for BasicLoop, 
-#bootstrap is required for FibonacciElement, Nested Call, and StaticTest because they all call Sys.init, which is the entry point of the program.
-
-#simple function still doesn't work  
+#bootstrap is not required for BasicLoop, SimpleFunction
+#bootstrap is required for FibonacciElement, Nested Call, and StaticTest because they all call Sys.init
+bootstrap()
 
 readFile(path)
 print(message)
 writeToFile()
-print("Done! Output written to "+ os.path.splitext(path)[0] + ".asm")
+print("Output written to "+ os.path.splitext(path)[0] + ".asm")

@@ -94,6 +94,8 @@ M=M+1
 D=M
 @R13
 M=D
+@R13
+D=M
 @5
 A=D-A
 D=M
@@ -169,6 +171,8 @@ M=M+1
 D=M
 @R13
 M=D
+@R13
+D=M
 @5
 A=D-A
 D=M
@@ -261,6 +265,8 @@ M=M+1
 D=M
 @R13
 M=D
+@R13
+D=M
 @5
 A=D-A
 D=M
@@ -336,6 +342,8 @@ M=M+1
 D=M
 @R13
 M=D
+@R13
+D=M
 @5
 A=D-A
 D=M
